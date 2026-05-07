@@ -1,0 +1,1576 @@
+
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Shadow Fitness System</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<!-- ✅ Supabase CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+/* ============ VARIABLES ============ */
+:root{
+  --void:#030009;--card:#0d0820;--card2:#120d2a;
+  --primary:#7c3aed;--pl:#a855f7;--blue:#2563eb;--bl:#60a5fa;
+  --gold:#f59e0b;--success:#10b981;--danger:#ef4444;
+  --text:#e2e8f0;--muted:#64748b;--dim:#94a3b8;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{background:var(--void);color:var(--text);font-family:'Exo 2',sans-serif;
+  max-width:430px;margin:auto;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;
+  background:radial-gradient(ellipse 60% 40% at 50% -5%,rgba(124,58,237,.22) 0%,transparent 70%),
+             radial-gradient(ellipse 40% 30% at 90% 50%,rgba(37,99,235,.12) 0%,transparent 60%);
+  pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;inset:0;
+  background-image:radial-gradient(1px 1px at 20% 30%,rgba(255,255,255,.4) 0%,transparent 100%),
+    radial-gradient(1px 1px at 50% 15%,rgba(168,85,247,.6) 0%,transparent 100%),
+    radial-gradient(1px 1px at 80% 45%,rgba(255,255,255,.3) 0%,transparent 100%),
+    radial-gradient(1px 1px at 35% 65%,rgba(96,165,250,.5) 0%,transparent 100%),
+    radial-gradient(1px 1px at 70% 80%,rgba(255,255,255,.25) 0%,transparent 100%),
+    radial-gradient(1px 1px at 90% 20%,rgba(96,165,250,.3) 0%,transparent 100%);
+  pointer-events:none;z-index:0;}
+
+/* ============ SCREENS ============ */
+.screen{display:none;position:relative;z-index:1;min-height:100vh;}
+.screen.active{display:block;}
+
+/* ============ LOADING ============ */
+.loading-wrap{min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:16px;}
+.loader{width:48px;height:48px;border-radius:50%;
+  border:3px solid rgba(124,58,237,.2);
+  border-top-color:#a855f7;
+  animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-txt{font-family:'Cinzel',serif;font-size:11px;color:#a855f7;letter-spacing:4px;}
+
+/* ============ AUTH ============ */
+.auth-wrap{min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:24px;}
+.auth-logo{text-align:center;margin-bottom:28px;}
+.auth-logo-icon{width:62px;height:62px;
+  background:linear-gradient(135deg,#7c3aed,#2563eb);
+  border-radius:18px;display:flex;align-items:center;justify-content:center;
+  margin:0 auto 12px;box-shadow:0 0 30px rgba(124,58,237,.5);}
+.auth-logo h1{font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:white;letter-spacing:2px;}
+.auth-logo p{font-size:10px;color:#a855f7;letter-spacing:4px;margin-top:4px;}
+.auth-card{background:rgba(13,8,32,.95);border:1px solid rgba(124,58,237,.35);
+  border-radius:20px;padding:22px;width:100%;max-width:360px;position:relative;}
+.auth-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,#a855f7,transparent);border-radius:20px 20px 0 0;}
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:0;
+  background:rgba(255,255,255,.03);border-radius:12px;padding:3px;margin-bottom:18px;}
+.auth-tab{padding:10px;border:none;background:none;border-radius:10px;
+  font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;
+  font-family:'Exo 2',sans-serif;letter-spacing:1px;transition:all .2s;}
+.auth-tab.active{background:linear-gradient(135deg,#7c3aed,#2563eb);color:white;
+  box-shadow:0 0 15px rgba(124,58,237,.3);}
+.auth-form{display:none;}
+.auth-form.active{display:block;}
+.auth-field{margin-bottom:11px;}
+.auth-field label{display:block;font-size:9px;color:#a855f7;letter-spacing:2px;
+  font-weight:600;margin-bottom:4px;}
+.auth-input{width:100%;background:rgba(255,255,255,.04);
+  border:1px solid rgba(124,58,237,.22);border-radius:11px;
+  padding:12px 14px;font-size:14px;color:white;font-family:'Exo 2',sans-serif;
+  outline:none;transition:border-color .2s;}
+.auth-input:focus{border-color:#7c3aed;}
+.auth-btn{width:100%;padding:14px;border:none;border-radius:13px;
+  font-size:14px;font-weight:800;cursor:pointer;letter-spacing:2px;
+  font-family:'Exo 2',sans-serif;
+  background:linear-gradient(135deg,#7c3aed,#a855f7,#2563eb);color:white;
+  box-shadow:0 0 25px rgba(124,58,237,.35);margin-top:4px;transition:all .3s;}
+.auth-btn:hover{box-shadow:0 0 35px rgba(124,58,237,.5);transform:translateY(-1px);}
+.auth-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+.google-btn{width:100%;padding:13px;border:1px solid rgba(255,255,255,.15);
+  border-radius:13px;font-size:13px;font-weight:700;cursor:pointer;
+  font-family:'Exo 2',sans-serif;background:rgba(255,255,255,.05);
+  color:white;display:flex;align-items:center;justify-content:center;gap:10px;
+  margin-top:10px;transition:all .2s;letter-spacing:1px;}
+.google-btn:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25);}
+.divider{display:flex;align-items:center;gap:10px;margin:14px 0;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;
+  background:rgba(255,255,255,.08);}
+.divider span{font-size:10px;color:var(--muted);letter-spacing:2px;}
+.auth-error{font-size:12px;text-align:center;margin-top:10px;min-height:18px;
+  color:#ef4444;font-weight:600;}
+.auth-hint{text-align:center;font-size:10px;color:var(--muted);margin-top:12px;}
+.auth-hint span{color:#a855f7;font-weight:700;}
+
+/* ============ SHARED COMPONENTS ============ */
+.app-inner{padding:18px 14px 100px;}
+.hdr{display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:18px;padding:10px 0;}
+.logo-wrap{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:38px;height:38px;
+  background:linear-gradient(135deg,#7c3aed,#2563eb);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 20px rgba(124,58,237,.5);}
+.logo-title{font-family:'Cinzel',serif;font-size:15px;font-weight:700;
+  color:white;letter-spacing:2px;}
+.logo-sub{font-size:9px;color:#a855f7;letter-spacing:4px;display:block;margin-top:2px;}
+.user-pill{background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.25);
+  border-radius:20px;padding:5px 12px;font-size:11px;color:#a855f7;
+  font-weight:600;cursor:pointer;transition:all .2s;}
+.user-pill:hover{background:rgba(124,58,237,.25);}
+
+/* ============ HUNTER CARD ============ */
+.hunter-card{background:linear-gradient(135deg,#0d0820,#150b30,#0a0f1e);
+  border:1px solid rgba(124,58,237,.4);border-radius:20px;padding:18px;
+  margin-bottom:14px;position:relative;overflow:hidden;}
+.hunter-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,#a855f7,#7c3aed,#60a5fa,transparent);}
+.hunter-card::after{content:'';position:absolute;top:-40px;right:-40px;
+  width:140px;height:140px;
+  background:radial-gradient(circle,rgba(124,58,237,.12) 0%,transparent 70%);
+  border-radius:50%;}
+.h-top{display:flex;align-items:center;gap:14px;}
+.avatar-wrap{position:relative;flex-shrink:0;}
+.avatar{width:64px;height:64px;border-radius:50%;
+  background:linear-gradient(135deg,#1a0d3a,#0d1a3a);
+  display:flex;align-items:center;justify-content:center;font-size:26px;
+  border:2px solid rgba(168,85,247,.5);box-shadow:0 0 20px rgba(124,58,237,.3);}
+.lvl-badge{position:absolute;bottom:-3px;right:-3px;width:22px;height:22px;
+  background:linear-gradient(135deg,#7c3aed,#a855f7);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:800;color:white;border:2px solid var(--void);}
+.h-info h2{font-family:'Cinzel',serif;font-size:14px;font-weight:700;
+  color:white;letter-spacing:1px;}
+.h-sub{font-size:10px;color:#a855f7;font-weight:600;letter-spacing:2px;margin:3px 0;}
+.rank-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;
+  border-radius:20px;font-size:10px;font-weight:700;letter-spacing:1px;}
+.re{background:rgba(100,116,139,.2);border:1px solid #475569;color:#94a3b8;}
+.rd{background:rgba(5,150,105,.2);border:1px solid #059669;color:#34d399;}
+.rc{background:rgba(37,99,235,.2);border:1px solid #2563eb;color:#60a5fa;}
+.rb{background:rgba(124,58,237,.2);border:1px solid #7c3aed;color:#a855f7;}
+.ra{background:rgba(245,158,11,.2);border:1px solid #f59e0b;color:#fbbf24;}
+.rs{background:linear-gradient(135deg,rgba(168,85,247,.3),rgba(37,99,235,.3));
+  border:1px solid #a855f7;color:white;box-shadow:0 0 10px rgba(168,85,247,.3);}
+.xp-sec{margin-top:14px;}
+.xp-hdr{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:5px;}
+.xp-track{height:9px;background:rgba(255,255,255,.04);border-radius:20px;overflow:hidden;
+  border:1px solid rgba(124,58,237,.15);}
+.xp-fill{height:100%;border-radius:20px;
+  background:linear-gradient(90deg,#7c3aed,#a855f7,#60a5fa);
+  transition:width .6s;position:relative;overflow:hidden;}
+.xp-fill::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);
+  animation:shim 2s infinite;}
+@keyframes shim{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px;}
+.sbox{background:rgba(255,255,255,.03);border:1px solid rgba(124,58,237,.12);
+  border-radius:12px;padding:10px;text-align:center;}
+.sval{font-size:22px;font-weight:900;color:#a855f7;display:block;font-family:'Cinzel',serif;}
+.slbl{font-size:9px;color:var(--muted);letter-spacing:1px;}
+
+/* ============ PAGES ============ */
+.page{display:none;animation:fadeIn .3s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.sec-title{font-family:'Cinzel',serif;font-size:11px;font-weight:600;color:#a855f7;
+  letter-spacing:3px;margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.sec-title::after{content:'';flex:1;height:1px;
+  background:linear-gradient(90deg,rgba(124,58,237,.4),transparent);}
+
+/* DAILY BANNER */
+.daily{background:linear-gradient(135deg,rgba(124,58,237,.18),rgba(37,99,235,.18));
+  border:1px solid rgba(124,58,237,.32);border-radius:16px;padding:13px 15px;
+  margin-bottom:14px;display:flex;align-items:center;gap:11px;}
+.daily-ico{width:40px;height:40px;
+  background:linear-gradient(135deg,#7c3aed,#2563eb);border-radius:11px;
+  display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.daily-txt h3{font-size:13px;font-weight:700;color:white;margin-bottom:2px;}
+.daily-txt p{font-size:11px;color:#a855f7;}
+
+/* QUEST CARDS */
+.qcard{background:var(--card);border:1px solid rgba(124,58,237,.18);border-radius:15px;
+  padding:14px;margin-bottom:10px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;}
+.qcard:hover,.qcard:active{border-color:rgba(124,58,237,.55);background:var(--card2);
+  transform:translateY(-1px);box-shadow:0 6px 24px rgba(124,58,237,.18);}
+.qcard::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(168,85,247,.35),transparent);}
+.qtop{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:9px;}
+.qname{font-size:15px;font-weight:700;color:white;margin-bottom:2px;}
+.qmuscle{font-size:11px;color:#a855f7;font-weight:600;}
+.qr{display:flex;flex-direction:column;align-items:flex-end;gap:5px;}
+.xptag{background:linear-gradient(135deg,rgba(124,58,237,.28),rgba(37,99,235,.28));
+  border:1px solid rgba(124,58,237,.38);padding:3px 9px;border-radius:20px;
+  font-size:11px;font-weight:800;color:#a855f7;}
+.qmeta{display:flex;gap:7px;flex-wrap:wrap;}
+.pill{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+  border-radius:20px;padding:3px 8px;font-size:10px;color:var(--dim);}
+.pill.sets{color:#60a5fa;border-color:rgba(96,165,250,.2);}
+.pill.reps{color:#34d399;border-color:rgba(52,211,153,.2);}
+
+/* ADMIN QUEST CARD */
+.aq-card{background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(217,119,6,.1));
+  border:1px solid rgba(245,158,11,.35);border-radius:15px;padding:14px;
+  margin-bottom:10px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;}
+.aq-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(245,158,11,.5),transparent);}
+.aq-badge{background:rgba(245,158,11,.2);border:1px solid rgba(245,158,11,.4);
+  padding:2px 8px;border-radius:20px;font-size:9px;font-weight:700;color:#f59e0b;letter-spacing:1px;}
+
+/* EXERCISE DETAIL */
+.dview{display:none;position:fixed;inset:0;background:var(--void);z-index:100;
+  overflow-y:auto;max-width:430px;margin:auto;}
+.dview.open{display:block;animation:slideUp .3s ease;}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.dhdr{padding:18px 14px 10px;display:flex;align-items:center;gap:12px;
+  position:sticky;top:0;background:rgba(3,0,9,.92);backdrop-filter:blur(12px);
+  z-index:10;border-bottom:1px solid rgba(124,58,237,.15);}
+.back{width:36px;height:36px;background:rgba(124,58,237,.14);
+  border:1px solid rgba(124,58,237,.28);border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:#a855f7;font-size:18px;flex-shrink:0;}
+.dtitle{font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:white;letter-spacing:1px;}
+.dbody{padding:14px 14px 100px;}
+.ex-hero{background:linear-gradient(135deg,#0d0820,#1a0d3a,#0a0f1e);
+  border:1px solid rgba(124,58,237,.28);border-radius:18px;padding:22px;
+  margin-bottom:14px;text-align:center;position:relative;overflow:hidden;}
+.ex-hero::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,#a855f7,transparent);}
+.eico{font-size:60px;margin-bottom:10px;display:block;
+  filter:drop-shadow(0 0 18px rgba(168,85,247,.5));animation:float 3s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.ex-hero h2{font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:white;margin-bottom:10px;}
+.hero-tags{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;}
+.msec{background:var(--card);border:1px solid rgba(124,58,237,.18);
+  border-radius:14px;padding:14px;margin-bottom:10px;}
+.msec h4{font-size:10px;color:#a855f7;letter-spacing:3px;font-weight:600;
+  margin-bottom:10px;font-family:'Cinzel',serif;}
+.mgrid{display:flex;flex-wrap:wrap;gap:7px;}
+.mchip{padding:5px 11px;border-radius:20px;font-size:11px;font-weight:700;}
+.mprimary{background:linear-gradient(135deg,rgba(124,58,237,.35),rgba(37,99,235,.35));
+  border:1px solid rgba(124,58,237,.45);color:#c4b5fd;}
+.msecondary{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);color:var(--dim);}
+.setgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:10px;}
+.setbox{background:var(--card);border:1px solid rgba(124,58,237,.18);
+  border-radius:13px;padding:13px 9px;text-align:center;}
+.setnum{font-size:26px;font-weight:900;color:#a855f7;display:block;font-family:'Cinzel',serif;}
+.setlbl{font-size:9px;color:var(--muted);letter-spacing:2px;}
+.instr{background:var(--card);border:1px solid rgba(124,58,237,.18);
+  border-radius:14px;padding:14px;margin-bottom:10px;}
+.instr h4{font-size:10px;color:#a855f7;letter-spacing:3px;font-weight:600;
+  margin-bottom:12px;font-family:'Cinzel',serif;}
+.step{display:flex;gap:11px;margin-bottom:12px;align-items:flex-start;}
+.step:last-child{margin-bottom:0;}
+.stepn{width:24px;height:24px;background:linear-gradient(135deg,#7c3aed,#a855f7);
+  border-radius:7px;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;color:white;flex-shrink:0;}
+.stept{font-size:12.5px;line-height:1.6;color:var(--dim);padding-top:2px;}
+.stept strong{color:white;}
+.timersec{background:var(--card);border:1px solid rgba(124,58,237,.18);
+  border-radius:14px;padding:18px;margin-bottom:10px;text-align:center;}
+.timersec h4{font-size:10px;color:#a855f7;letter-spacing:3px;margin-bottom:12px;font-family:'Cinzel',serif;}
+.tring{width:110px;height:110px;margin:0 auto 14px;position:relative;}
+.tring svg{transform:rotate(-90deg);}
+.tring circle{fill:none;stroke-width:6;}
+.ttrack{stroke:rgba(124,58,237,.13);}
+.tprog{stroke:url(#tg);stroke-dasharray:289;stroke-dashoffset:0;
+  stroke-linecap:round;transition:stroke-dashoffset 1s linear;}
+.ttime{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:30px;font-weight:900;color:white;font-family:'Cinzel',serif;}
+
+/* BUTTONS */
+.abtn{width:100%;padding:15px;border:none;border-radius:14px;
+  font-size:15px;font-weight:800;cursor:pointer;letter-spacing:2px;
+  font-family:'Exo 2',sans-serif;transition:all .3s;margin-bottom:8px;}
+.abtn:last-child{margin-bottom:0;}
+.bstart{background:linear-gradient(135deg,#7c3aed,#a855f7,#2563eb);color:white;
+  box-shadow:0 0 28px rgba(124,58,237,.38);}
+.bstart:hover{box-shadow:0 0 38px rgba(124,58,237,.55);transform:translateY(-1px);}
+.bnext{background:linear-gradient(135deg,#059669,#10b981);color:white;display:none;}
+.bcomplete{background:linear-gradient(135deg,#d97706,#f59e0b);color:white;display:none;}
+
+/* SLEEP & WATER */
+.sleep-hero{text-align:center;padding:26px 18px;
+  background:linear-gradient(135deg,#0d0820,#0a0f1e);
+  border:1px solid rgba(37,99,235,.28);border-radius:18px;margin-bottom:14px;}
+.stime{font-size:58px;font-weight:900;color:#60a5fa;font-family:'Cinzel',serif;
+  display:block;text-shadow:0 0 25px rgba(96,165,250,.5);}
+.slabel{color:var(--muted);font-size:11px;letter-spacing:3px;}
+.sleep-card{background:var(--card);border:1px solid rgba(124,58,237,.18);
+  border-radius:14px;padding:16px;margin-bottom:12px;position:relative;}
+.sleep-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(124,58,237,.4),transparent);}
+.sinputs{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:12px;}
+.sinput-g label{display:block;font-size:9px;color:#a855f7;letter-spacing:2px;
+  margin-bottom:5px;font-weight:600;}
+.sinput{width:100%;background:rgba(255,255,255,.04);
+  border:1px solid rgba(124,58,237,.22);border-radius:11px;padding:13px;
+  font-size:22px;font-weight:800;color:white;font-family:'Cinzel',serif;
+  outline:none;text-align:center;}
+.quality-box{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);
+  border-radius:11px;padding:14px;text-align:center;font-size:13px;}
+.water-hero{text-align:center;padding:22px;
+  background:linear-gradient(135deg,#0a0f1e,#0d1a2a);
+  border:1px solid rgba(96,165,250,.25);border-radius:18px;margin-bottom:14px;}
+.wcount{font-size:50px;font-weight:900;color:#60a5fa;font-family:'Cinzel',serif;
+  display:block;text-shadow:0 0 25px rgba(96,165,250,.4);}
+.wtrack{height:6px;background:rgba(255,255,255,.04);border-radius:20px;overflow:hidden;
+  border:1px solid rgba(96,165,250,.18);margin-top:10px;}
+.wfill{height:100%;background:linear-gradient(90deg,#2563eb,#60a5fa);
+  border-radius:20px;transition:.4s;}
+.wgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:12px;}
+.wcup{aspect-ratio:1;border-radius:13px;background:rgba(255,255,255,.03);
+  border:1px solid rgba(96,165,250,.13);display:flex;align-items:center;
+  justify-content:center;font-size:22px;cursor:pointer;transition:all .3s;}
+.wcup.filled{background:linear-gradient(135deg,rgba(37,99,235,.38),rgba(96,165,250,.28));
+  border-color:rgba(96,165,250,.5);box-shadow:0 0 12px rgba(96,165,250,.18);}
+.water-card{background:var(--card);border:1px solid rgba(124,58,237,.18);
+  border-radius:14px;padding:16px;position:relative;}
+.water-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(124,58,237,.4),transparent);}
+.btn2{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:11px;}
+
+/* ============ BOTTOM NAV ============ */
+.nav{position:fixed;bottom:0;left:0;right:0;max-width:430px;margin:auto;
+  background:rgba(3,0,9,.95);backdrop-filter:blur(20px);
+  border-top:1px solid rgba(124,58,237,.18);
+  display:grid;grid-template-columns:repeat(4,1fr);
+  padding:8px 0 12px;z-index:50;}
+.nbtn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px;
+  border:none;background:none;cursor:pointer;transition:all .2s;position:relative;}
+.nico{font-size:20px;transition:transform .2s;}
+.nlbl{font-size:9px;color:var(--muted);font-weight:600;letter-spacing:1px;}
+.nbtn.active .nlbl{color:#a855f7;}
+.nbtn.active .nico{transform:scale(1.18);filter:drop-shadow(0 0 7px rgba(168,85,247,.8));}
+.nav-badge{position:absolute;top:3px;right:8px;width:16px;height:16px;
+  background:#ef4444;border-radius:50%;display:none;align-items:center;
+  justify-content:center;font-size:9px;font-weight:800;color:white;border:2px solid var(--void);}
+.nav-badge.show{display:flex;}
+
+/* ============ COMPLETE OVERLAY ============ */
+.cov{display:none;position:fixed;inset:0;background:rgba(3,0,9,.97);z-index:300;
+  align-items:center;justify-content:center;flex-direction:column;
+  text-align:center;padding:20px;max-width:430px;margin:auto;}
+.cov.show{display:flex;}
+.cico{font-size:80px;margin-bottom:18px;animation:pulse 1.2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.ctitle{font-family:'Cinzel',serif;font-size:26px;font-weight:900;color:white;margin-bottom:6px;}
+.csub{color:#a855f7;font-size:12px;letter-spacing:4px;margin-bottom:24px;}
+.cxp{font-size:48px;font-weight:900;color:#a855f7;font-family:'Cinzel',serif;
+  text-shadow:0 0 28px rgba(168,85,247,.6);margin-bottom:28px;}
+
+/* ============ ADMIN PANEL ============ */
+.admin-inner{padding:18px 14px 100px;}
+.admin-hdr{display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:18px;padding:10px 0;}
+.admin-title{font-family:'Cinzel',serif;font-size:16px;color:white;letter-spacing:2px;}
+.logout-btn{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);
+  color:#f87171;padding:7px 12px;border-radius:9px;font-size:11px;font-weight:700;
+  cursor:pointer;font-family:'Exo 2',sans-serif;}
+.admin-page{display:none;animation:fadeIn .3s ease;}
+.admin-page.active{display:block;}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.dash-card{background:var(--card);border:1px solid rgba(124,58,237,.18);
+  border-radius:14px;padding:14px;text-align:center;position:relative;overflow:hidden;}
+.dash-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(168,85,247,.4),transparent);}
+.dash-val{font-size:32px;font-weight:900;font-family:'Cinzel',serif;display:block;}
+.dash-lbl{font-size:9px;color:var(--muted);letter-spacing:2px;margin-top:4px;}
+.user-row{background:var(--card);border:1px solid rgba(124,58,237,.15);border-radius:12px;
+  padding:12px;margin-bottom:8px;cursor:pointer;transition:all .2s;}
+.user-row:hover{border-color:rgba(124,58,237,.4);background:var(--card2);}
+.user-name{font-weight:700;font-size:13px;color:white;margin-bottom:2px;}
+.user-email{font-size:10px;color:var(--muted);}
+.user-badges{display:flex;gap:7px;margin-top:6px;flex-wrap:wrap;}
+.quest-form{background:var(--card);border:1px solid rgba(124,58,237,.18);
+  border-radius:14px;padding:16px;}
+.quest-form::before{display:none;}
+.form-field{margin-bottom:12px;}
+.form-field label{display:block;font-size:9px;color:#a855f7;letter-spacing:2px;
+  font-weight:600;margin-bottom:5px;}
+.form-input{width:100%;background:rgba(255,255,255,.04);
+  border:1px solid rgba(124,58,237,.22);border-radius:10px;
+  padding:12px;font-size:13px;color:white;font-family:'Exo 2',sans-serif;outline:none;}
+.form-input:focus{border-color:#7c3aed;}
+textarea.form-input{resize:vertical;min-height:80px;}
+.admin-nav{position:fixed;bottom:0;left:0;right:0;max-width:430px;margin:auto;
+  background:rgba(3,0,9,.95);backdrop-filter:blur(20px);
+  border-top:1px solid rgba(124,58,237,.18);
+  display:grid;grid-template-columns:repeat(3,1fr);
+  padding:8px 0 12px;z-index:50;}
+
+/* ============ NOTIFICATION ============ */
+.notif{position:fixed;top:18px;left:50%;
+  transform:translateX(-50%) translateY(-120px);
+  background:linear-gradient(135deg,#0d0820,#1a0d3a);
+  border:1px solid rgba(124,58,237,.5);border-radius:14px;
+  padding:12px 18px;z-index:400;
+  transition:transform .5s cubic-bezier(.34,1.56,.64,1);
+  min-width:200px;text-align:center;
+  box-shadow:0 0 28px rgba(124,58,237,.28);max-width:320px;}
+.notif.show{transform:translateX(-50%) translateY(0);}
+.nttl{font-size:9px;color:#a855f7;letter-spacing:3px;font-weight:600;margin-bottom:3px;}
+.nmsg{font-size:14px;font-weight:800;color:white;}
+.nxp{color:#a855f7;font-size:11px;margin-top:3px;}
+
+/* RANKS STATS */
+.rank-row{display:flex;align-items:center;gap:11px;padding:9px;
+  border-radius:11px;margin-bottom:8px;}
+.rank-row.active-rank{background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.28);}
+.rank-row.locked{background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);}
+.rank-info{flex:1;}
+.rank-name{font-size:12px;font-weight:700;color:white;}
+.rank-req{font-size:10px;color:var(--muted);}
+</style>
+</head>
+<body>
+
+<!-- NOTIFICATION -->
+<div class="notif" id="notif">
+  <div class="nttl">⚡ SYSTEM XABARNOMASI</div>
+  <div class="nmsg" id="nmsg">Quest bajarildi!</div>
+  <div class="nxp" id="nxp">+25 XP qo'shildi</div>
+</div>
+
+<!-- ========== LOADING SCREEN ========== -->
+<div id="loadScreen" class="screen active">
+  <div class="loading-wrap">
+    <div class="loader"></div>
+    <div class="load-txt">SHADOW SYSTEM YUKLANMOQDA...</div>
+  </div>
+</div>
+
+<!-- ========== AUTH SCREEN ========== -->
+<div id="authScreen" class="screen">
+  <div class="auth-wrap">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="white"/>
+        </svg>
+      </div>
+      <h1>SHADOW FITNESS</h1>
+      <p>SYSTEM v2.0</p>
+    </div>
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchTab('login')">KIRISH</button>
+        <button class="auth-tab" onclick="switchTab('register')">RO'YXAT</button>
+      </div>
+
+      <!-- LOGIN -->
+      <div id="loginForm" class="auth-form active">
+        <div class="auth-field">
+          <label>EMAIL</label>
+          <input type="email" id="loginEmail" class="auth-input" placeholder="hunter@email.com">
+        </div>
+        <div class="auth-field">
+          <label>PAROL</label>
+          <input type="password" id="loginPass" class="auth-input" placeholder="••••••••">
+        </div>
+        <button class="auth-btn" id="loginBtn" onclick="doLogin()">⚔️ KIRISH</button>
+        <div class="divider"><span>YOKI</span></div>
+        <button class="google-btn" onclick="doGoogleLogin()">
+          <svg width="18" height="18" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          GOOGLE BILAN KIRISH
+        </button>
+      </div>
+
+      <!-- REGISTER -->
+      <div id="registerForm" class="auth-form">
+        <div class="auth-field">
+          <label>ISM (HUNTER NOMI)</label>
+          <input type="text" id="regName" class="auth-input" placeholder="Nuriddin">
+        </div>
+        <div class="auth-field">
+          <label>EMAIL</label>
+          <input type="email" id="regEmail" class="auth-input" placeholder="hunter@email.com">
+        </div>
+        <div class="auth-field">
+          <label>PAROL</label>
+          <input type="password" id="regPass" class="auth-input" placeholder="Kamida 6 belgi">
+        </div>
+        <button class="auth-btn" id="registerBtn" onclick="doRegister()">🗡️ RO'YXATDAN O'TISH</button>
+        <div class="divider"><span>YOKI</span></div>
+        <button class="google-btn" onclick="doGoogleLogin()">
+          <svg width="18" height="18" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          GOOGLE BILAN RO'YXAT
+        </button>
+      </div>
+
+      <div class="auth-error" id="authError"></div>
+      <div class="auth-hint">Admin: <span>admin@shadowfitness.uz</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== USER APP SCREEN ========== -->
+<div id="appScreen" class="screen">
+  <div class="app-inner">
+    <div class="hdr">
+      <div class="logo-wrap">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="white"/>
+          </svg>
+        </div>
+        <div>
+          <div class="logo-title">SHADOW FITNESS</div>
+          <span class="logo-sub">SYSTEM v2.0</span>
+        </div>
+      </div>
+      <div class="user-pill" id="userPill" onclick="doLogout()">↩ Chiqish</div>
+    </div>
+
+    <div class="hunter-card">
+      <div class="h-top">
+        <div class="avatar-wrap">
+          <div class="avatar">⚔️</div>
+          <div class="lvl-badge" id="lvlBadge">1</div>
+        </div>
+        <div class="h-info">
+          <h2 id="hunterName">HUNTER</h2>
+          <div class="h-sub">SHADOW FITNESS HUNTER</div>
+          <div class="rank-badge re" id="rankBadge">⚔ E RANK HUNTER</div>
+        </div>
+      </div>
+      <div class="xp-sec">
+        <div class="xp-hdr"><span>XP JARAYONI</span><span id="xpTxt">0 / 100 XP</span></div>
+        <div class="xp-track"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+      </div>
+      <div class="stats-row">
+        <div class="sbox"><span class="sval" id="sLvl">1</span><span class="slbl">LEVEL</span></div>
+        <div class="sbox"><span class="sval" id="sXp">0</span><span class="slbl">XP</span></div>
+        <div class="sbox"><span class="sval" id="sQ">0</span><span class="slbl">QUESTLAR</span></div>
+      </div>
+    </div>
+
+    <!-- PAGES -->
+    <div id="page-home" class="page active">
+      <div class="daily">
+        <div class="daily-ico">🗡️</div>
+        <div class="daily-txt">
+          <h3>KUNLIK QUEST REJASI</h3>
+          <p>10 shadow mashq • E → S Rank maqsad</p>
+        </div>
+      </div>
+      <div id="adminQuestSection" style="display:none">
+        <div class="sec-title">📨 ADMIN QUESTLAR</div>
+        <div id="adminQuestList"></div>
+      </div>
+      <div class="sec-title">SHADOW QUESTLAR</div>
+      <div id="questList"></div>
+    </div>
+
+    <div id="page-sleep" class="page">
+      <div class="sleep-hero">
+        <span class="stime" id="sleepDisp">0:00</span>
+        <span class="slabel">UYQU VAQTI</span>
+      </div>
+      <div class="sleep-card">
+        <div class="sec-title">UYQU KIRITING</div>
+        <div class="sinputs">
+          <div class="sinput-g"><label>SOAT</label>
+            <input type="number" class="sinput" id="sHour" placeholder="0" min="0" max="24"></div>
+          <div class="sinput-g"><label>DAQIQA</label>
+            <input type="number" class="sinput" id="sMin" placeholder="0" min="0" max="59"></div>
+        </div>
+        <button class="abtn bstart" onclick="saveSleep()" style="margin-bottom:0">💾 SAQLASH</button>
+      </div>
+      <div class="sleep-card">
+        <div class="sec-title">UYQU SIFATI</div>
+        <div class="quality-box" id="qualBox" style="color:var(--muted)">Uyqu vaqtini kiriting...</div>
+      </div>
+    </div>
+
+    <div id="page-water" class="page">
+      <div class="water-hero">
+        <span class="wcount" id="wCount">0/8</span>
+        <span class="slabel">STAKAN SUV</span>
+        <div class="wtrack"><div class="wfill" id="wFill" style="width:0%"></div></div>
+      </div>
+      <div class="water-card">
+        <div class="sec-title">SUV KUZATUVI</div>
+        <div class="wgrid" id="wGrid"></div>
+        <div class="btn2">
+          <button class="abtn bstart" style="font-size:13px;padding:12px;margin-bottom:0" onclick="addWater()">+ STAKAN</button>
+          <button class="abtn" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:white;font-size:13px;padding:12px;margin-bottom:0" onclick="resetWater()">↺ TIKLASH</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="page-stats" class="page">
+      <div class="sec-title">RANK TIZIMI</div>
+      <div class="sleep-card" style="margin-bottom:12px"><div id="rankList"></div></div>
+      <div class="sec-title">HUNTER STATISTIKA</div>
+      <div class="sleep-card"><div id="todayStat"></div></div>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <div class="nav">
+    <button class="nbtn active" onclick="openPage('page-home',this)">
+      <span class="nico">⚔️</span><span class="nlbl">QUESTLAR</span>
+      <div class="nav-badge" id="questBadge">!</div>
+    </button>
+    <button class="nbtn" onclick="openPage('page-sleep',this)">
+      <span class="nico">🌙</span><span class="nlbl">UYQU</span>
+    </button>
+    <button class="nbtn" onclick="openPage('page-water',this)">
+      <span class="nico">💧</span><span class="nlbl">SUV</span>
+    </button>
+    <button class="nbtn" onclick="openPage('page-stats',this)">
+      <span class="nico">📊</span><span class="nlbl">STATISTIKA</span>
+    </button>
+  </div>
+</div>
+
+<!-- ========== ADMIN SCREEN ========== -->
+<div id="adminScreen" class="screen">
+  <div class="admin-inner">
+    <div class="admin-hdr">
+      <div>
+        <div class="admin-title">ADMIN PANEL</div>
+        <div style="font-size:10px;color:#a855f7;letter-spacing:2px">SHADOW FITNESS SYSTEM</div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">↩ Chiqish</button>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="admin-dashboard" class="admin-page active">
+      <div class="sec-title">DASHBOARD</div>
+      <div class="dash-grid">
+        <div class="dash-card">
+          <span class="dash-val" id="dTotalUsers" style="color:#60a5fa">0</span>
+          <div class="dash-lbl">FOYDALANUVCHILAR</div>
+        </div>
+        <div class="dash-card">
+          <span class="dash-val" id="dTotalQuests" style="color:#34d399">0</span>
+          <div class="dash-lbl">JAMI QUESTLAR</div>
+        </div>
+        <div class="dash-card">
+          <span class="dash-val" id="dTotalXP" style="color:#a855f7">0</span>
+          <div class="dash-lbl">JAMI XP</div>
+        </div>
+        <div class="dash-card">
+          <span class="dash-val" id="dAvgLevel" style="color:#f59e0b">-</span>
+          <div class="dash-lbl">O'RTACHA LEVEL</div>
+        </div>
+      </div>
+      <div class="sec-title">OXIRGI FOYDALANUVCHILAR</div>
+      <div id="recentUsers"></div>
+    </div>
+
+    <!-- USERS -->
+    <div id="admin-users" class="admin-page">
+      <div class="sec-title">BARCHA FOYDALANUVCHILAR</div>
+      <div id="usersList"></div>
+    </div>
+
+    <!-- SEND QUEST -->
+    <div id="admin-sendquest" class="admin-page">
+      <div class="sec-title">QUEST YUBORISH</div>
+      <div class="quest-form">
+        <div class="form-field">
+          <label>QUEST NOMI</label>
+          <input type="text" id="qTitle" class="form-input" placeholder="Shadow Boss Mashq">
+        </div>
+        <div class="form-field">
+          <label>TAVSIF</label>
+          <textarea id="qDesc" class="form-input" placeholder="Quest haqida qisqacha..."></textarea>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="form-field">
+            <label>XP MIQDORI</label>
+            <input type="number" id="qXp" class="form-input" placeholder="50" value="50">
+          </div>
+          <div class="form-field">
+            <label>ICON (EMOJI)</label>
+            <input type="text" id="qIcon" class="form-input" placeholder="🔥" value="📨">
+          </div>
+        </div>
+        <div class="form-field">
+          <label>QIYINLIK DARAJASI</label>
+          <select id="qDiff" class="form-input">
+            <option value="E">E Rank (Oson)</option>
+            <option value="D">D Rank</option>
+            <option value="C" selected>C Rank (O'rtacha)</option>
+            <option value="B">B Rank</option>
+            <option value="A">A Rank (Qiyin)</option>
+            <option value="S">S Rank (Juda Qiyin)</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>KIMGA (bo'sh = barcha foydalanuvchilar)</label>
+          <input type="text" id="qTarget" class="form-input" placeholder="email@example.com (bo'sh = hammaga)">
+        </div>
+        <button class="abtn bstart" onclick="sendAdminQuest()" style="margin-bottom:0">📨 QUEST YUBORISH</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN NAV -->
+  <div class="admin-nav">
+    <button class="nbtn active" onclick="openAdminPage('admin-dashboard',this)">
+      <span class="nico">📊</span><span class="nlbl">DASHBOARD</span>
+    </button>
+    <button class="nbtn" onclick="openAdminPage('admin-users',this)">
+      <span class="nico">👥</span><span class="nlbl">USERS</span>
+    </button>
+    <button class="nbtn" onclick="openAdminPage('admin-sendquest',this)">
+      <span class="nico">📨</span><span class="nlbl">QUEST YUB.</span>
+    </button>
+  </div>
+</div>
+
+<!-- ========== EXERCISE DETAIL ========== -->
+<div class="dview" id="dview">
+  <div class="dhdr">
+    <div class="back" onclick="closeDetail()">←</div>
+    <div class="dtitle" id="dtitle">MASHQ TAFSILOTI</div>
+  </div>
+  <div class="dbody">
+    <div class="ex-hero">
+      <span class="eico" id="dico">🔥</span>
+      <h2 id="dname">Shadow Push-up</h2>
+      <div class="hero-tags" id="dtags"></div>
+    </div>
+    <div class="msec">
+      <h4>🎯 MUSKUL GURUHLARI</h4>
+      <div class="mgrid" id="dmuscles"></div>
+    </div>
+    <div class="setgrid">
+      <div class="setbox"><span class="setnum" id="dsets">3</span><span class="setlbl">SETLAR</span></div>
+      <div class="setbox"><span class="setnum" id="dreps" style="font-size:20px">20 TA</span><span class="setlbl">TAKROR</span></div>
+      <div class="setbox"><span class="setnum" id="dxp" style="font-size:20px;color:#f59e0b">+25</span><span class="setlbl">XP</span></div>
+    </div>
+    <div class="instr">
+      <h4>📋 BAJARISH USULI</h4>
+      <div id="dsteps"></div>
+    </div>
+    <div class="timersec">
+      <h4>⏱ VAQT TAYMER</h4>
+      <div class="tring">
+        <svg viewBox="0 0 110 110" width="110" height="110">
+          <defs>
+            <linearGradient id="tg" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#7c3aed"/>
+              <stop offset="100%" style="stop-color:#a855f7"/>
+            </linearGradient>
+          </defs>
+          <circle class="ttrack" cx="55" cy="55" r="46"/>
+          <circle class="tprog" id="tcirc" cx="55" cy="55" r="46"/>
+        </svg>
+        <div class="ttime" id="tdisp">30</div>
+      </div>
+      <button class="abtn bstart" id="startBtn" onclick="startEx()">▶ BOSHLASH</button>
+      <button class="abtn bnext" id="nextBtn" onclick="nextEx()">⚡ KEYINGI MASHQ</button>
+      <button class="abtn bcomplete" id="complBtn" onclick="showComplete()">👑 BAJARILDI!</button>
+    </div>
+  </div>
+</div>
+
+<!-- COMPLETE OVERLAY -->
+<div class="cov" id="cov">
+  <div class="cico">👑</div>
+  <div class="ctitle">QUEST BAJARILDI!</div>
+  <div class="csub">SOYA ASKAR KUCHAYDI</div>
+  <div class="cxp" id="cxp">+25 XP</div>
+  <button class="abtn bstart" style="max-width:220px" onclick="closeComplete()">DAVOM ETISH</button>
+</div>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+// ──────────────────────────────────────────
+//  SUPABASE INIT
+//  ⚠️  Almashtiring: o'zingizning URL va KEY
+// ──────────────────────────────────────────
+const SUPABASE_URL  = 'https://jykxasgvrageaghvlllp.supabase.cohttps://jykxasgvrageaghvlllp.supabase.co';
+const SUPABASE_KEY  = 'sb_publishable_ChuGm6y-CfkPkrF9lN_jqg_IqFyqr1N';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ──────────────────────────────────────────
+//  EXERCISE DATA
+// ──────────────────────────────────────────
+const EXERCISES = [
+  {id:1,icon:'⚡',name:'Shadow Push-up',rank:'D',
+   primary:["Ko'krak (Pectorals)","Triceps","Old Yelka"],
+   secondary:["Yadro (Core)","Serratus Anterior"],
+   sets:3,reps:"20 TA",time:60,xp:20,
+   steps:[
+    {t:"<strong>Holat:</strong> Qo'llarni yelka kengligida, tana to'g'ri chiziqda"},
+    {t:"<strong>Tushish:</strong> Tirsak 45° bukiling, ko'krak 2–3 sm gacha yaqinlashsin"},
+    {t:"<strong>Ko'tarish:</strong> Ko'krak muskulini siqib tepaga ko'tariling"},
+    {t:"<strong>Nafas:</strong> Pastga tushganda oling, ko'tarilganda chiqaring"}
+   ]},
+  {id:2,icon:'🔥',name:'Dark Monarch Squat',rank:'D',
+   primary:["Quadriceps","Glutes (Dumba)","Hamstrings"],
+   secondary:["Buzoqlar (Calves)","Yadro","O'murtqa Muskullar"],
+   sets:3,reps:"30 TA",time:90,xp:25,
+   steps:[
+    {t:"<strong>Holat:</strong> Oyoqlar yelkadan keng, uchlar 15–30° tashqariga"},
+    {t:"<strong>Tushish:</strong> Orqani tik tutib, dumba orqaga va pastga"},
+    {t:"<strong>Chuqurlik:</strong> Sonlar yerga parallel bo'lguncha"},
+    {t:"<strong>Ko'tarish:</strong> Dumbani siqib tik holatga qayting"}
+   ]},
+  {id:3,icon:'👑',name:'Shadow Monarch Pull-up',rank:'C',
+   primary:["Latissimus Dorsi (Orqa)","Biceps","Orqa Yelka"],
+   secondary:["Trapezius","Rhomboids","Yadro"],
+   sets:3,reps:"10 TA",time:120,xp:35,
+   steps:[
+    {t:"<strong>Ushlab olish:</strong> Bar yoki osilma joy yelkadan keng (kaftlar oldinga)"},
+    {t:"<strong>Osilib turish:</strong> Qo'llar to'liq yozilgan, yelka pichog'i pastga"},
+    {t:"<strong>Ko'tarish:</strong> Dirsak pastga tortib ko'krak barga tegsin"},
+    {t:"<strong>Tushish:</strong> 3 sekund nazorat bilan pastga"}
+   ]},
+  {id:4,icon:'🗡️',name:'Shadow Plank',rank:'D',
+   primary:["Rectus Abdominis (Press)","Transverse Abdominis","Yadro"],
+   secondary:["Glutes","Old Yelka","Serratus Anterior"],
+   sets:3,reps:"60 SEK",time:60,xp:20,
+   steps:[
+    {t:"<strong>Holat:</strong> Tirsak yelka ostida, barmoqlar to'g'ri"},
+    {t:"<strong>Tana:</strong> Boshdan oyoq uchigacha to'g'ri chiziq"},
+    {t:"<strong>Yadro:</strong> Qorinni ichkariga tortib ushlab turing"},
+    {t:"<strong>Nafas:</strong> Muntazam nafas oling, ushlab qolmang"}
+   ]},
+  {id:5,icon:'🌑',name:'Void Dragon Lunge',rank:'D',
+   primary:["Quadriceps","Glutes","Hamstrings"],
+   secondary:["Buzoqlar","Muvozanat","Yadro"],
+   sets:3,reps:"15+15 TA",time:90,xp:25,
+   steps:[
+    {t:"<strong>Boshlang'ich:</strong> Tik turing, oyoqlar birlashtiring"},
+    {t:"<strong>Qadam:</strong> Oldinga katta qadam, tizza 90° burchak"},
+    {t:"<strong>Orqa tizza:</strong> Yerga yaqin lekin tegmasin"},
+    {t:"<strong>Almashtirish:</strong> Har oyoq uchun 15 tadan, jami 30"}
+   ]},
+  {id:6,icon:'☠️',name:'Berserker Burpee',rank:'C',
+   primary:["Butun Tana","Cardio","Glutes & Ko'krak"],
+   secondary:["Yelkalar","Qorin","Quadriceps"],
+   sets:3,reps:"10 TA",time:120,xp:40,
+   steps:[
+    {t:"<strong>Tayyorlik:</strong> Oyoqlar yelka kengligida, tik turing"},
+    {t:"<strong>Tushish:</strong> Qo'llarni yerga qo'yib oyoqni orqaga tepib push-up holatiga keling"},
+    {t:"<strong>Push-up:</strong> 1 ta push-up bajaring"},
+    {t:"<strong>Sakrash:</strong> Oyoqlarni tortib tepaga sakrang"}
+   ]},
+  {id:7,icon:'⚔️',name:'Knight Dips',rank:'C',
+   primary:["Triceps","Pastki Ko'krak","Old Yelka"],
+   secondary:["Serratus Anterior","Yadro","Rhomboids"],
+   sets:3,reps:"15 TA",time:90,xp:30,
+   steps:[
+    {t:"<strong>Holat:</strong> Stul chetiga qo'llar qo'yib, oyoqlar oldinga cho'zing"},
+    {t:"<strong>Tushish:</strong> Tirsak orqaga bukib pastga tushing"},
+    {t:"<strong>Chuqurlik:</strong> Yelka chizig'i tirsak chizig'iga yetguncha"},
+    {t:"<strong>Ko'tarish:</strong> Triceps siqib tik holatga qayting"}
+   ]},
+  {id:8,icon:'💀',name:'Shadow Mountain Climber',rank:'D',
+   primary:["Abs","Obliques (Yon Qorin)","Hip Flexors"],
+   secondary:["Ko'krak","Yelkalar","Quadriceps"],
+   sets:3,reps:"30 SEK",time:30,xp:20,
+   steps:[
+    {t:"<strong>Holat:</strong> Push-up holati, qo'llar yelka ostida"},
+    {t:"<strong>Harakat:</strong> Bir oyoqni ko'kragingizga torting, qaytaring"},
+    {t:"<strong>Tezlik:</strong> Yugurayotgandek tez bajaring"},
+    {t:"<strong>Tana:</strong> To'g'ri chiziqda qolsin, dumba ko'tarilmasin"}
+   ]},
+  {id:9,icon:'🏔️',name:"S-Rank Warrior's Core",rank:'B',
+   primary:["Rectus Abdominis","Obliques","Transverse Abdominis"],
+   secondary:["Hip Flexors","Serratus Anterior","Yadro"],
+   sets:4,reps:"20 TA",time:90,xp:45,
+   steps:[
+    {t:"<strong>Holat:</strong> Orqani yerga, tizza bukilgan, qo'llar quloq yonida"},
+    {t:"<strong>Ko'tarish:</strong> Qorin siqib elkalar ko'tarilsin (bo'yin emas!)"},
+    {t:"<strong>Maksimum:</strong> Yuqorida 1 sek qorinni yanada qisib turing"},
+    {t:"<strong>Tushish:</strong> Sekin nazorat bilan, to'liq yotmang"}
+   ]},
+  {id:10,icon:'🌊',name:"Monarch's Cardio Sprint",rank:'A',
+   primary:["Butun Oyoqlar","Cardio Tizimi","Core"],
+   secondary:["Glutes","Hip Flexors","Mental Chidamlilik"],
+   sets:1,reps:"3 DAQIQA",time:180,xp:50,
+   steps:[
+    {t:"<strong>Isish:</strong> 30 sek sekin yuring yoki depsinib isining"},
+    {t:"<strong>Sprint:</strong> 20 sek maksimal tezlikda o'rningizda yuguring"},
+    {t:"<strong>Dam olish:</strong> 10 sek sekin yuring — HIIT usuli"},
+    {t:"<strong>Davomiylik:</strong> Jami 3 daqiqa davom ettiring"}
+   ]}
+];
+
+const RANKS = [
+  {r:'E',lbl:'E RANK HUNTER',    xp:0,   cls:'re',ico:'⚔️'},
+  {r:'D',lbl:'D RANK HUNTER',    xp:100, cls:'rd',ico:'🔥'},
+  {r:'C',lbl:'C RANK HUNTER',    xp:250, cls:'rc',ico:'💀'},
+  {r:'B',lbl:'B RANK HUNTER',    xp:500, cls:'rb',ico:'⚡'},
+  {r:'A',lbl:'A RANK HUNTER',    xp:1000,cls:'ra',ico:'👑'},
+  {r:'S',lbl:'S RANK SHADOW MONARCH',xp:2000,cls:'rs',ico:'🖤'}
+];
+
+// ──────────────────────────────────────────
+//  GLOBAL STATE
+// ──────────────────────────────────────────
+let currentUser = null;
+let userProfile = null;
+let userStats   = {xp:0,level:1,quests_done:0,water:0,sleep_hours:0,sleep_minutes:0};
+let curDetailId = null;
+let timerI = null;
+let tLeft = 30, tTotal = 30, exDone = false;
+let saveTimer = null;
+
+// ──────────────────────────────────────────
+//  SCREEN MANAGEMENT
+// ──────────────────────────────────────────
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id+'Screen').classList.add('active');
+}
+
+// ──────────────────────────────────────────
+//  AUTH
+// ──────────────────────────────────────────
+function switchTab(tab){
+  document.querySelectorAll('.auth-tab').forEach((t,i)=>
+    t.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='register')));
+  document.getElementById('loginForm').classList.toggle('active', tab==='login');
+  document.getElementById('registerForm').classList.toggle('active', tab==='register');
+  document.getElementById('authError').textContent='';
+}
+
+function setAuthLoading(on){
+  ['loginBtn','registerBtn'].forEach(id=>{
+    const b=document.getElementById(id);
+    if(b){ b.disabled=on; b.textContent=on?'⏳ YUKLANMOQDA...':b.id==='loginBtn'?'⚔️ KIRISH':'🗡️ RO\'YXATDAN O\'TISH'; }
+  });
+}
+
+function showAuthError(msg,ok=false){
+  const el=document.getElementById('authError');
+  el.textContent=msg;
+  el.style.color=ok?'#10b981':'#ef4444';
+}
+
+async function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass =document.getElementById('loginPass').value;
+  if(!email||!pass){ showAuthError('Email va parolni kiriting!'); return; }
+  setAuthLoading(true);
+  const {error}=await sb.auth.signInWithPassword({email,password:pass});
+  setAuthLoading(false);
+  if(error){ showAuthError('Noto\'g\'ri email yoki parol!'); return; }
+}
+
+async function doRegister(){
+  const name =document.getElementById('regName').value.trim();
+  const email=document.getElementById('regEmail').value.trim();
+  const pass =document.getElementById('regPass').value;
+  if(!name||!email||!pass){ showAuthError('Barcha maydonlarni to\'ldiring!'); return; }
+  if(pass.length<6){ showAuthError('Parol kamida 6 belgi bo\'lishi kerak!'); return; }
+  setAuthLoading(true);
+  const {error}=await sb.auth.signUp({email,password:pass,
+    options:{data:{display_name:name}}});
+  setAuthLoading(false);
+  if(error){ showAuthError(error.message); return; }
+  showAuthError('✅ Ro\'yxat muvaffaqiyatli! Email tasdiqlang (spam tekshiring)',true);
+}
+
+async function doGoogleLogin(){
+  await sb.auth.signInWithOAuth({provider:'google',
+    options:{redirectTo:window.location.origin}});
+}
+
+async function doLogout(){
+  await sb.auth.signOut();
+  currentUser=null; userProfile=null;
+  userStats={xp:0,level:1,quests_done:0,water:0,sleep_hours:0,sleep_minutes:0};
+  showScreen('auth');
+}
+
+// ──────────────────────────────────────────
+//  LOAD USER DATA FROM SUPABASE
+// ──────────────────────────────────────────
+async function loadAndRoute(user){
+  currentUser=user;
+  // Profile
+  const {data:prof}=await sb.from('profiles').select('*').eq('id',user.id).maybeSingle();
+  userProfile=prof;
+  // Stats
+  const {data:stats}=await sb.from('user_stats').select('*').eq('user_id',user.id).maybeSingle();
+  if(stats){ userStats=stats; }
+  // Route
+  if(prof?.role==='admin'){
+    await loadAdminData();
+    showScreen('admin');
+  } else {
+    initApp();
+    showScreen('app');
+  }
+}
+
+// ──────────────────────────────────────────
+//  SAVE STATS (debounced)
+// ──────────────────────────────────────────
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(async()=>{
+    if(!currentUser) return;
+    await sb.from('user_stats').upsert({
+      user_id:currentUser.id,
+      xp:userStats.xp,
+      level:userStats.level,
+      quests_done:userStats.quests_done,
+      water:userStats.water,
+      sleep_hours:userStats.sleep_hours,
+      sleep_minutes:userStats.sleep_minutes,
+      last_active:new Date().toISOString()
+    });
+  },800);
+}
+
+// ──────────────────────────────────────────
+//  USER APP
+// ──────────────────────────────────────────
+function rkCls(r){ return {E:'re',D:'rd',C:'rc',B:'rb',A:'ra',S:'rs'}[r]||'re'; }
+
+async function initApp(){
+  const name=userProfile?.display_name || currentUser?.user_metadata?.display_name
+           || currentUser?.email?.split('@')[0] || 'HUNTER';
+  document.getElementById('userPill').textContent='↩ '+name;
+  document.getElementById('hunterName').textContent=name.toUpperCase();
+  updateUI();
+  renderQuests();
+  renderWater();
+  loadSleepUI();
+  await loadAdminQuests();
+  document.getElementById('dateBadge2') &&
+    (document.getElementById('dateBadge2').textContent=
+      new Date().toLocaleDateString('uz-UZ',{weekday:'short',day:'numeric',month:'short'}));
+}
+
+function updateUI(){
+  const xp=userStats.xp, level=userStats.level;
+  const pct=xp%100;
+  document.getElementById('xpFill').style.width=pct+'%';
+  document.getElementById('xpTxt').textContent=pct+' / 100 XP';
+  document.getElementById('sLvl').textContent=level;
+  document.getElementById('sXp').textContent=(level-1)*100+xp;
+  document.getElementById('sQ').textContent=userStats.quests_done||0;
+  document.getElementById('lvlBadge').textContent=level;
+  const tot=(level-1)*100+xp;
+  let cur=RANKS[0];
+  RANKS.forEach(r=>{ if(tot>=r.xp) cur=r; });
+  const b=document.getElementById('rankBadge');
+  b.className='rank-badge '+cur.cls;
+  b.textContent=cur.ico+' '+cur.lbl;
+}
+
+function renderQuests(){
+  document.getElementById('questList').innerHTML=
+    EXERCISES.map(e=>`
+      <div class="qcard" onclick="openDetail(${e.id})">
+        <div class="qtop">
+          <div><div class="qname">${e.icon} ${e.name}</div>
+               <div class="qmuscle">${e.primary[0]}</div></div>
+          <div class="qr">
+            <div class="xptag">+${e.xp} XP</div>
+            <div class="rank-badge ${rkCls(e.rank)}">${e.rank} RANK</div>
+          </div>
+        </div>
+        <div class="qmeta">
+          <div class="pill sets">${e.sets} SET</div>
+          <div class="pill reps">${e.reps}</div>
+          <div class="pill">${e.primary.slice(0,2).join(' • ')}</div>
+        </div>
+      </div>`).join('');
+}
+
+async function loadAdminQuests(){
+  const {data}=await sb.from('admin_quests')
+    .select('*')
+    .or(`target_user_id.is.null,target_user_id.eq.${currentUser.id}`)
+    .order('created_at',{ascending:false})
+    .limit(5);
+  if(!data||!data.length){ return; }
+  document.getElementById('adminQuestSection').style.display='block';
+  document.getElementById('questBadge').classList.add('show');
+  document.getElementById('adminQuestList').innerHTML=data.map(q=>`
+    <div class="aq-card" onclick="openAdminQuestDetail('${q.id}')">
+      <div class="qtop">
+        <div><div class="qname">${q.icon||'📨'} ${q.title}</div>
+             <div class="qmuscle">${q.description||''}</div></div>
+        <div class="qr">
+          <div class="xptag">+${q.xp} XP</div>
+          <div class="aq-badge">ADMIN QUEST</div>
+        </div>
+      </div>
+      <div class="qmeta"><div class="pill time">${q.difficulty||'C'} RANK</div></div>
+    </div>`).join('');
+}
+
+function openAdminQuestDetail(id){ showNotif('Admin Quest','Bu quest maxsus siz uchun!'); }
+
+function openPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#appScreen .nbtn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='page-stats'){ renderRanks(); renderStat(); }
+}
+
+// ──────────────────────────────────────────
+//  EXERCISE DETAIL
+// ──────────────────────────────────────────
+function openDetail(id){
+  const ex=EXERCISES.find(e=>e.id===id); if(!ex) return;
+  curDetailId=id; exDone=false;
+  document.getElementById('dtitle').textContent=ex.name.toUpperCase();
+  document.getElementById('dico').textContent=ex.icon;
+  document.getElementById('dname').textContent=ex.name;
+  document.getElementById('dsets').textContent=ex.sets;
+  document.getElementById('dreps').textContent=ex.reps;
+  document.getElementById('dxp').textContent='+'+ex.xp;
+  document.getElementById('dtags').innerHTML=
+    `<div class="pill sets">${ex.sets} SET</div>
+     <div class="pill reps">${ex.reps}</div>
+     <div class="rank-badge ${rkCls(ex.rank)}">${ex.rank} RANK</div>`;
+  document.getElementById('dmuscles').innerHTML=
+    ex.primary.map(m=>`<div class="mchip mprimary">🎯 ${m}</div>`).join('')+
+    ex.secondary.map(m=>`<div class="mchip msecondary">• ${m}</div>`).join('');
+  document.getElementById('dsteps').innerHTML=
+    ex.steps.map((s,i)=>`<div class="step"><div class="stepn">${i+1}</div>
+      <div class="stept">${s.t}</div></div>`).join('');
+  tLeft=ex.time; tTotal=ex.time;
+  document.getElementById('tdisp').textContent=tLeft;
+  const r=46,circ=2*Math.PI*r;
+  document.getElementById('tcirc').style.strokeDasharray=circ;
+  document.getElementById('tcirc').style.strokeDashoffset=0;
+  document.getElementById('startBtn').style.display='block';
+  document.getElementById('nextBtn').style.display='none';
+  document.getElementById('complBtn').style.display='none';
+  clearInterval(timerI);
+  document.getElementById('dview').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closeDetail(){
+  document.getElementById('dview').classList.remove('open');
+  document.body.style.overflow='';
+  clearInterval(timerI);
+}
+
+function startEx(){ document.getElementById('startBtn').style.display='none'; runTimer(); }
+
+function runTimer(){
+  clearInterval(timerI);
+  const r=46,circ=2*Math.PI*r;
+  timerI=setInterval(()=>{
+    tLeft--;
+    document.getElementById('tdisp').textContent=tLeft;
+    document.getElementById('tcirc').style.strokeDashoffset=circ*(1-tLeft/tTotal);
+    if(tLeft<=0){ clearInterval(timerI); onDone(); }
+  },1000);
+}
+
+function onDone(){
+  const idx=EXERCISES.findIndex(e=>e.id===curDetailId);
+  if(!exDone){
+    gainXP(EXERCISES[idx].xp);
+    exDone=true;
+  }
+  const isLast=idx===EXERCISES.length-1;
+  document.getElementById(isLast?'complBtn':'nextBtn').style.display='block';
+}
+
+function nextEx(){
+  const idx=EXERCISES.findIndex(e=>e.id===curDetailId);
+  if(idx<EXERCISES.length-1) openDetail(EXERCISES[idx+1].id);
+}
+
+function showComplete(){
+  document.getElementById('cxp').textContent='+'+EXERCISES.find(e=>e.id===curDetailId).xp+' XP';
+  document.getElementById('cov').classList.add('show');
+}
+function closeComplete(){
+  document.getElementById('cov').classList.remove('show');
+  closeDetail();
+}
+
+// ──────────────────────────────────────────
+//  XP + LEVEL
+// ──────────────────────────────────────────
+function gainXP(amount){
+  userStats.xp=(userStats.xp||0)+amount;
+  userStats.quests_done=(userStats.quests_done||0)+1;
+  if(userStats.xp>=100){ userStats.xp-=100; userStats.level=(userStats.level||1)+1; }
+  updateUI();
+  scheduleSave();
+  showNotif('QUEST BAJARILDI!','+'+amount+" XP qo'shildi");
+}
+
+function showNotif(msg,xp){
+  const n=document.getElementById('notif');
+  document.getElementById('nmsg').textContent=msg;
+  document.getElementById('nxp').textContent=xp;
+  n.classList.add('show');
+  setTimeout(()=>n.classList.remove('show'),3000);
+}
+
+// ──────────────────────────────────────────
+//  SLEEP
+// ──────────────────────────────────────────
+function saveSleep(){
+  const h=+document.getElementById('sHour').value||0;
+  const m=+document.getElementById('sMin').value||0;
+  userStats.sleep_hours=h; userStats.sleep_minutes=m;
+  document.getElementById('sleepDisp').textContent=h+':'+String(m).padStart(2,'0');
+  const tot=h*60+m;
+  let q='';
+  if(tot<360) q='<span style="color:#ef4444">⚠️ Kam uyqu — Hunter kuchi tiklanmaydi</span>';
+  else if(tot<420) q='<span style="color:#f59e0b">⚡ O\'rtacha — 7 soatga yaqinlashmoqda</span>';
+  else if(tot<=540) q='<span style="color:#10b981">✅ Optimal (7–9 soat) — kuch to\'liq tiklanadi</span>';
+  else q='<span style="color:#60a5fa">💤 Juda ko\'p uyqu (9+ soat ham optimal emas)</span>';
+  document.getElementById('qualBox').innerHTML=q;
+  scheduleSave();
+  showNotif('UYQU SAQLANDI!',h+' soat '+m+' daqiqa');
+}
+
+function loadSleepUI(){
+  document.getElementById('sleepDisp').textContent=
+    (userStats.sleep_hours||0)+':'+(String(userStats.sleep_minutes||0)).padStart(2,'0');
+  document.getElementById('sHour').value=userStats.sleep_hours||'';
+  document.getElementById('sMin').value=userStats.sleep_minutes||'';
+}
+
+// ──────────────────────────────────────────
+//  WATER
+// ──────────────────────────────────────────
+function renderWater(){
+  const g=document.getElementById('wGrid'); g.innerHTML='';
+  const w=userStats.water||0;
+  for(let i=0;i<8;i++){
+    const d=document.createElement('div');
+    d.className='wcup'+(i<w?' filled':'');
+    d.textContent='💧';
+    d.onclick=()=>{ userStats.water=i<w?i:i+1; scheduleSave(); renderWater(); };
+    g.appendChild(d);
+  }
+  document.getElementById('wCount').textContent=w+'/8';
+  document.getElementById('wFill').style.width=(w/8*100)+'%';
+}
+
+function addWater(){
+  if((userStats.water||0)<8){
+    userStats.water=(userStats.water||0)+1;
+    scheduleSave(); renderWater();
+    showNotif('SUV ICHILDI!',(userStats.water)+'/8 stakan');
+  }
+}
+function resetWater(){ userStats.water=0; scheduleSave(); renderWater(); }
+
+// ──────────────────────────────────────────
+//  STATS PAGE
+// ──────────────────────────────────────────
+function renderRanks(){
+  const tot=(userStats.level-1)*100+userStats.xp;
+  document.getElementById('rankList').innerHTML=RANKS.map(r=>`
+    <div class="rank-row ${tot>=r.xp?'active-rank':'locked'}">
+      <div class="rank-badge ${r.cls}">${r.ico} ${r.r}</div>
+      <div class="rank-info">
+        <div class="rank-name">${r.lbl}</div>
+        <div class="rank-req">${r.xp} XP talab qilinadi</div>
+      </div>
+      <span>${tot>=r.xp?'<span style="color:#10b981;font-size:18px">✓</span>':'<span style="color:var(--muted)">🔒</span>'}</span>
+    </div>`).join('');
+}
+
+function renderStat(){
+  const tot=(userStats.level-1)*100+userStats.xp;
+  document.getElementById('todayStat').innerHTML=`
+    <div class="stats-row" style="margin-top:0">
+      <div class="sbox"><span class="sval">${userStats.quests_done||0}</span><span class="slbl">QUESTLAR</span></div>
+      <div class="sbox"><span class="sval" style="font-size:18px">${tot}</span><span class="slbl">UMUMIY XP</span></div>
+      <div class="sbox"><span class="sval">${userStats.water||0}/8</span><span class="slbl">SUV</span></div>
+    </div>`;
+}
+
+// ──────────────────────────────────────────
+//  ADMIN PANEL
+// ──────────────────────────────────────────
+async function loadAdminData(){
+  try {
+    const {data:users}=await sb.rpc('get_all_users_stats');
+    renderAdminDashboard(users||[]);
+    renderUsersList(users||[]);
+  } catch(e){
+    // RPC not set up yet — show placeholder
+    renderAdminDashboard([]);
+    renderUsersList([]);
+  }
+}
+
+function renderAdminDashboard(users){
+  document.getElementById('dTotalUsers').textContent=users.length;
+  document.getElementById('dTotalQuests').textContent=users.reduce((s,u)=>s+(u.quests_done||0),0);
+  document.getElementById('dTotalXP').textContent=users.reduce((s,u)=>s+((u.level-1)*100+(u.xp||0)),0);
+  const avgLvl=users.length?Math.round(users.reduce((s,u)=>s+(u.level||1),0)/users.length):'-';
+  document.getElementById('dAvgLevel').textContent=avgLvl;
+  document.getElementById('recentUsers').innerHTML=users.slice(0,3).map(u=>`
+    <div class="user-row">
+      <div class="qtop">
+        <div><div class="user-name">${u.display_name||'User'}</div>
+             <div class="user-email">${u.email}</div></div>
+        <div class="qr">
+          <div class="xptag">Level ${u.level||1}</div>
+          <div class="pill">${u.quests_done||0} quest</div>
+        </div>
+      </div>
+    </div>`).join('')||'<div style="color:var(--muted);font-size:13px;text-align:center;padding:14px">Hozircha foydalanuvchilar yo\'q</div>';
+}
+
+function renderUsersList(users){
+  document.getElementById('usersList').innerHTML=users.map(u=>`
+    <div class="user-row">
+      <div class="qtop">
+        <div><div class="user-name">${u.display_name||'User'}</div>
+             <div class="user-email">${u.email}</div></div>
+        <div class="qr">
+          <div class="rank-badge rd">Level ${u.level||1}</div>
+        </div>
+      </div>
+      <div class="user-badges">
+        <div class="pill sets">${(u.level-1)*100+(u.xp||0)} XP</div>
+        <div class="pill reps">${u.quests_done||0} Quest</div>
+        <div class="pill">${u.last_active?new Date(u.last_active).toLocaleDateString('uz-UZ'):'—'}</div>
+      </div>
+    </div>`).join('')||'<div style="color:var(--muted);font-size:13px;text-align:center;padding:14px">SQL funksiya hali sozlanmagan. Quyidagi SQL ni Supabase da ishlatib ko\'ring.</div>';
+}
+
+function openAdminPage(id,btn){
+  document.querySelectorAll('.admin-page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.admin-nav .nbtn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='admin-users') loadAdminData();
+}
+
+async function sendAdminQuest(){
+  const title=document.getElementById('qTitle').value.trim();
+  const desc =document.getElementById('qDesc').value.trim();
+  const xp   =+document.getElementById('qXp').value||50;
+  const icon =document.getElementById('qIcon').value.trim()||'📨';
+  const diff =document.getElementById('qDiff').value;
+  const target=document.getElementById('qTarget').value.trim();
+  if(!title){ showAdminNotif('Quest nomini kiriting!'); return; }
+  let targetId=null;
+  if(target){
+    const {data:prof}=await sb.from('profiles').select('id').eq('email',target).maybeSingle();
+    if(!prof){ showAdminNotif('Bu email topilmadi!'); return; }
+    targetId=prof.id;
+  }
+  const {error}=await sb.from('admin_quests').insert({
+    title,description:desc,xp,icon,difficulty:diff,
+    target_user_id:targetId,
+    created_by:currentUser.id
+  });
+  if(error){ showAdminNotif('Xato: '+error.message); return; }
+  showAdminNotif('✅ Quest muvaffaqiyatli yuborildi!');
+  ['qTitle','qDesc','qIcon','qTarget'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value=el.id==='qIcon'?'📨':el.id==='qXp'?'50':'';
+  });
+}
+
+function showAdminNotif(msg){
+  showNotif('ADMIN', msg);
+}
+
+// ──────────────────────────────────────────
+//  AUTH STATE LISTENER  ← core
+// ──────────────────────────────────────────
+sb.auth.onAuthStateChange(async (event,session)=>{
+  if(session?.user){
+    await loadAndRoute(session.user);
+  } else if(event==='SIGNED_OUT'||event==='INITIAL_SESSION'){
+    showScreen('auth');
+  }
+});
+
+// ──────────────────────────────────────────
+//  INIT
+// ──────────────────────────────────────────
+(async()=>{
+  // Check for existing session
+  const {data:{session}}=await sb.auth.getSession();
+  if(session?.user){
+    await loadAndRoute(session.user);
+  } else {
+    showScreen('auth');
+  }
+})();
+</script>
+</body>
+</html>
+<!-- ```
+
+---
+
+Endi **Supabase SQL sxemasi** va **Vercel deploy** ko'rsatmalari:
+
+---
+
+## 1️⃣ Supabase SQL (bir marta ishlatish)
+
+Supabase Dashboard → **SQL Editor** → yangi query → quyidagini joylashtiring:
+
+```sql
+-- 1. PROFILES TABLE
+CREATE TABLE public.profiles (
+  id uuid REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
+  email text,
+  display_name text,
+  role text DEFAULT 'user',
+  created_at timestamptz DEFAULT now()
+);
+
+-- 2. USER STATS TABLE
+CREATE TABLE public.user_stats (
+  user_id uuid REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
+  xp integer DEFAULT 0,
+  level integer DEFAULT 1,
+  quests_done integer DEFAULT 0,
+  water integer DEFAULT 0,
+  sleep_hours integer DEFAULT 0,
+  sleep_minutes integer DEFAULT 0,
+  last_active timestamptz DEFAULT now()
+);
+
+-- 3. ADMIN QUESTS TABLE
+CREATE TABLE public.admin_quests (
+  id bigserial PRIMARY KEY,
+  title text NOT NULL,
+  description text,
+  icon text DEFAULT '📨',
+  xp integer DEFAULT 50,
+  difficulty text DEFAULT 'C',
+  target_user_id uuid REFERENCES auth.users,
+  created_by uuid REFERENCES auth.users,
+  created_at timestamptz DEFAULT now()
+);
+
+-- 4. ROW LEVEL SECURITY
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_stats ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.admin_quests ENABLE ROW LEVEL SECURITY;
+
+-- Profiles policies
+CREATE POLICY "users_own_profile" ON public.profiles
+  FOR ALL USING (auth.uid() = id);
+
+-- User stats policies
+CREATE POLICY "users_own_stats" ON public.user_stats
+  FOR ALL USING (auth.uid() = user_id);
+
+-- Admin quests: anyone authenticated can read theirs
+CREATE POLICY "read_own_quests" ON public.admin_quests
+  FOR SELECT TO authenticated
+  USING (target_user_id IS NULL OR target_user_id = auth.uid());
+
+CREATE POLICY "admin_insert_quests" ON public.admin_quests
+  FOR INSERT TO authenticated WITH CHECK (true);
+
+-- 5. AUTO-CREATE PROFILE ON SIGNUP
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, display_name)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'display_name', split_part(NEW.email,'@',1))
+  );
+  INSERT INTO public.user_stats (user_id) VALUES (NEW.id);
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- 6. ADMIN FUNCTION (admin panel uchun)
+CREATE OR REPLACE FUNCTION get_all_users_stats()
+RETURNS json AS $$
+DECLARE result json;
+BEGIN
+  IF (SELECT role FROM profiles WHERE id = auth.uid()) != 'admin' THEN
+    RAISE EXCEPTION 'Unauthorized';
+  END IF;
+  SELECT json_agg(u) INTO result FROM (
+    SELECT p.id::text, p.email, p.display_name,
+           COALESCE(s.xp,0) as xp,
+           COALESCE(s.level,1) as level,
+           COALESCE(s.quests_done,0) as quests_done,
+           s.last_active
+    FROM profiles p
+    LEFT JOIN user_stats s ON p.id = s.user_id
+    WHERE p.role = 'user' OR p.role IS NULL
+    ORDER BY s.last_active DESC NULLS LAST
+  ) u;
+  RETURN COALESCE(result,'[]'::json);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+```
+
+---
+
+## 2️⃣ Google OAuth Sozlash
+
+**Supabase Dashboard:**
+1. Authentication → Providers → Google → Enable
+2. Callback URL ni nusxalang: `https://jykxasgvrageaghvlllp.supabase.co/auth/v1/callback`
+
+**Google Cloud Console** ([console.cloud.google.com](https://console.cloud.google.com)):
+1. APIs & Services → Credentials → Create OAuth 2.0 Client
+2. Application type: **Web application**
+3. Authorized redirect URIs → quyidagini qo'shing:
+   ```
+   https://jykxasgvrageaghvlllp.supabase.co/auth/v1/callback
+   ```
+4. Client ID va Secret ni Supabase Google provider ga joylashtiring
+
+---
+
+## 3️⃣ Admin Account Yaratish
+
+1. Avval **ro'yxatdan o'ting** (masalan `admin@shadowfitness.uz`)
+2. Supabase Dashboard → Table Editor → `profiles` → Update:
+   - `role` ustunini `user` dan `admin` ga o'zgartiring
+
+---
+
+## 4️⃣ Vercel Deploy (2 daqiqa)
+
+**Usul 1 — Drag & Drop (eng oson):**
+1. `index.html` faylini yarating (yuqoridagi kodni joylashtiring)
+2. [vercel.com/new](https://vercel.com/new) → **"Continue with GitHub"** yoki
+3. Yoki: [vercel.com](https://vercel.com) → **"Deploy"** → papkani sudrab tashlang
+
+**Usul 2 — CLI:**
+```bash
+npm i -g vercel
+vercel  # index.html joylashgan papkada ishlating
+```
+
+**Vercel Site URL ni Supabase ga qo'shing:**
+- Supabase → Authentication → URL Configuration → Site URL:
+  ```
+  https://your-app.vercel.app
+  ```
+
+--- -->
